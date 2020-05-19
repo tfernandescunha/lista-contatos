@@ -3,7 +3,6 @@ import 'package:agendacontatos/models/contact.model.dart';
 import 'package:agendacontatos/ui/roundes_contact_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ContactPage extends StatefulWidget {
@@ -55,15 +54,7 @@ class _ContactPageState extends State<ContactPage> {
                 GestureDetector(
                     child: ContactImage(_editedContact.img, 140.0, 140.0),
                     onTap: () {
-                      ImagePicker.pickImage(source: ImageSource.camera).then((file) {
-                        if (file == null) {
-                          return;
-                        } else {
-                          setState(() {
-                            this._editedContact.img = file.path;
-                          });
-                        }
-                      });
+                      this._showPickImageOptions(context);
                     }),
                 TextField(
                   controller: this._nameController,
@@ -153,21 +144,62 @@ class _ContactPageState extends State<ContactPage> {
     }
   }
 
-  void _showOption(BuildContext context) {
-    showModalBottomSheet(context: context, builder: (BuildContext context) {
-      return BottomSheet(
-        onClosing: () {},
-        builder: (BuildContext context) {
-          return Container(
-            padding: EdgeInsets.all(10.0),
-            child: Row(
-              children: <Widget>[
+  void _getPicFromCameraOrGallery(ImageSource source, BuildContext context) {
+    ImagePicker.pickImage(source: source).then((file) {
+      if (file == null) {
+        return;
+      } else {
+        this._userEdited = true;
 
-              ],
-            ),
-          );
-        }
-      );
+        setState(() {
+          this._editedContact.img = file.path;
+        });
+
+        Navigator.pop(context);
+      }
     });
+  }
+
+  void _showPickImageOptions(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return BottomSheet(
+              onClosing: () {},
+              builder: (BuildContext context) {
+                return Container(
+                  padding: EdgeInsets.fromLTRB(10.0, 30.0, 10.0, 30.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      GestureDetector(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Image.asset('images/icons/camera.png'),
+                            Text('Câmera')
+                          ],
+                        ),
+                        onTap: () {
+                          this._getPicFromCameraOrGallery(ImageSource.camera, context);
+                        },
+                      ),
+                      GestureDetector(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Image.asset('images/icons/galeria.png'),
+                            Text('Galeria')
+                          ],
+                        ),
+                        onTap: () {
+                          this._getPicFromCameraOrGallery(ImageSource.gallery, context);
+                        },
+                      )
+                    ],
+                  ),
+                );
+              });
+        });
   }
 }
